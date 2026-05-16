@@ -64,9 +64,15 @@ examples/        Sample run specs and judge configs
 
 ## Design references
 
-Every component file header references the section of `Design-Doc.pdf` it
-implements (e.g. `# Implements §6.3 Run Service`). Decisions that diverge from the
-doc are noted in `docs/decisions/`.
+Every component file header references the section of `Design-Doc.md` it
+implements (e.g. `# Implements §6.3 Run Service`).
+
+- [`docs/decisions/`](docs/decisions/) — Architecture Decision Records (one
+  per major design choice, including divergences from the doc).
+- [`docs/tech-stack.md`](docs/tech-stack.md) — every external dependency
+  mapped to the ADR / architectural decision it serves, with alternatives
+  and swap cost.
+- [`docs/getting-started.md`](docs/getting-started.md) — local dev setup.
 
 ## Status
 
