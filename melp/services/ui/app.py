@@ -2,7 +2,7 @@
 
 This is intentionally tiny — three pages, no React. The doc identifies the UI
 as a Phase 1 deliverable but states "no dedicated frontend headcount in Y1"
-(see ``Design-Doc.pdf`` and the implementation plan). HTMX is enough to get
+(see ``Design-Doc.md`` and the implementation plan). HTMX is enough to get
 ML engineers off curl and into a browser without a real frontend team.
 """
 from __future__ import annotations
