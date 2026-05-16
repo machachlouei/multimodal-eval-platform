@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{% block title %}MELP{% endblock %}</title>
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<link rel="stylesheet" href="/static/melp.css">
+</head>
+<body>
+<header>
+  <a href="/" class="logo">MELP</a>
+  <span class="tag">multimodal eval &amp; learning platform</span>
+</header>
+<main>{% block body %}{% endblock %}</main>
+<footer>
+  <span>v0.1.0 — see Design-Doc.pdf</span>
+</footer>
+</body>
+</html>

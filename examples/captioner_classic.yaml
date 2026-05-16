@@ -1,0 +1,12 @@
+# Example run spec — classic metrics, no judge. Matches Appendix D of the design doc.
+project: captioner-pilot
+name: captioner-v0.1.0-smoke
+model_version_id: <MODEL_VERSION_ID>      # fill in from `melp run list` after seed
+dataset_version_id: <DATASET_VERSION_ID>
+metric_version_ids:
+  - <BLEU_METRIC_VERSION_ID>
+  - <ROUGE_L_METRIC_VERSION_ID>
+  - <EXACT_MATCH_METRIC_VERSION_ID>
+slice_set: []
+seed: 42
+priority: normal

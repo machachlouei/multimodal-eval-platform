@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Run {{ run.id }} · MELP{% endblock %}
+{% block body %}
+<h1>Run <code>{{ run.id }}</code></h1>
+<p>
+  Status: <strong class="status-{{ run.status }}">{{ run.status }}</strong>
+  · Model: <code>{{ run.model_version_id }}</code>
+  · Dataset: <code>{{ run.dataset_version_id }}</code>
+  · Submitted: {{ run.submitted_at }}
+</p>
+{% if run.progress %}
+  <p>Progress: {{ run.progress.examples_done }}/{{ run.progress.examples_total }}</p>
+{% endif %}
+{% if run.error %}<pre class="err">{{ run.error }}</pre>{% endif %}
+
+<h2>Results</h2>
+<table>
+  <thead><tr><th>Metric</th><th>Slice</th><th>Point</th><th>CI</th><th>n</th><th>p</th></tr></thead>
+  <tbody>
+  {% for rr in results %}
+    <tr>
+      <td>{{ mv_map.get(rr.metric_version_id).metric_id if mv_map.get(rr.metric_version_id) else rr.metric_version_id }}</td>
+      <td>{{ slice_map.get(rr.slice_def_id).name if rr.slice_def_id else "overall" }}</td>
+      <td>{{ "%.4f"|format(rr.point_estimate) }}</td>
+      <td>
+        {% if rr.ci_low is not none %}[{{ "%.4f"|format(rr.ci_low) }}, {{ "%.4f"|format(rr.ci_high) }}]{% endif %}
+      </td>
+      <td>{{ rr.n_examples }}</td>
+      <td>{% if rr.p_value is not none %}{{ "%.4f"|format(rr.p_value) }}{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

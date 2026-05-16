@@ -1,0 +1,21 @@
+# Single Dockerfile shared by every MELP service.
+# Build:  docker build -f infra/docker/Dockerfile.service -t melp:dev .
+# Run:    docker run -e MELP_SERVICE=gateway melp:dev
+#
+# Real production builds would: (1) install only the deps needed per service,
+# (2) use a non-root user, (3) sign the image (§12.3). Kept minimal here.
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY pyproject.toml README.md ./
+COPY melp ./melp
+COPY migrations ./migrations
+COPY alembic.ini ./
+
+RUN pip install --no-cache-dir -e ".[ray,temporal,judge,metrics-text,metrics-vision,metrics-speech]"
+
+ENV PYTHONUNBUFFERED=1
+
+# Convenience: pick the entrypoint via env.
+#   MELP_SERVICE=gateway → melp-gateway
+ENTRYPOINT ["sh", "-c", "exec melp-${MELP_SERVICE:-gateway}"]

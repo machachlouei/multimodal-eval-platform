@@ -1,0 +1,11 @@
+# Example judge-based run spec.
+project: captioner-pilot
+name: captioner-v0.1.0-judge
+model_version_id: <MODEL_VERSION_ID>
+dataset_version_id: <DATASET_VERSION_ID>
+metric_version_ids:
+  - <SEMANTIC_EQ_METRIC_VERSION_ID>
+judge_config_version_id: <JUDGE_CONFIG_VERSION_ID>
+slice_set: []
+seed: 42
+priority: normal

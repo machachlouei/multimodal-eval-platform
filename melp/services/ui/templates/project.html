@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} · MELP{% endblock %}
+{% block body %}
+<h1>{{ project.name }}</h1>
+<p>{{ project.description }}</p>
+<h2>Recent runs</h2>
+<table>
+  <thead><tr><th>ID</th><th>Status</th><th>Model</th><th>Dataset</th><th>Submitted</th></tr></thead>
+  <tbody>
+  {% for r in runs %}
+    <tr class="status-{{ r.status }}">
+      <td><a href="/r/{{ r.id }}">{{ r.id }}</a></td>
+      <td>{{ r.status }}</td>
+      <td>{{ r.model_version_id }}</td>
+      <td>{{ r.dataset_version_id }}</td>
+      <td>{{ r.submitted_at }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

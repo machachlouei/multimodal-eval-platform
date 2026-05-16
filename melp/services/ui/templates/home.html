@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Projects · MELP{% endblock %}
+{% block body %}
+<h1>Projects</h1>
+<table>
+  <thead><tr><th>Name</th><th>Description</th><th>Created</th></tr></thead>
+  <tbody>
+  {% for p in projects %}
+    <tr>
+      <td><a href="/p/{{ p.id }}">{{ p.name }}</a></td>
+      <td>{{ p.description }}</td>
+      <td>{{ p.created_at }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
