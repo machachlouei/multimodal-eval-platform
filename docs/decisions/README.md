@@ -4,6 +4,9 @@ This directory contains Architecture Decision Records (ADRs) for MELP. ADRs
 capture decisions that are hard to reverse, that shape the system's properties,
 or that future readers will want to understand the reasoning behind.
 
+For a flat reference of every external library mapped to the ADR it serves,
+see [`../tech-stack.md`](../tech-stack.md).
+
 We use a lightweight format adapted from Michael Nygard's classic template:
 
 ```
