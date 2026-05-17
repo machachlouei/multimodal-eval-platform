@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard · MELP{% endblock %}
+{% block body %}
+<h1>Leaderboard — {{ metric_version.id if metric_version else "?" }}</h1>
+<p>Project <code>{{ project_id }}</code> · top 50 by point estimate (overall slice only).</p>
+<table>
+  <thead><tr><th>Rank</th><th>Run</th><th>Model</th><th>Point</th><th>CI</th><th>n</th><th>Submitted</th></tr></thead>
+  <tbody>
+  {% for r, rr in rows %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td><a href="/r/{{ r.id }}">{{ r.id }}</a></td>
+      <td><code>{{ r.model_version_id }}</code></td>
+      <td>{{ "%.4f"|format(rr.point_estimate) }}</td>
+      <td>{% if rr.ci_low is not none %}[{{ "%.4f"|format(rr.ci_low) }}, {{ "%.4f"|format(rr.ci_high) }}]{% endif %}</td>
+      <td>{{ rr.n_examples }}</td>
+      <td>{{ r.submitted_at.strftime("%Y-%m-%d %H:%M") }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

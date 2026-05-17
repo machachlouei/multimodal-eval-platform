@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Audit · MELP{% endblock %}
+{% block body %}
+<h1>Audit log</h1>
+<form method="get" action="/audit">
+  <input name="project_id" placeholder="project_id" value="{{ filters.project_id or '' }}">
+  <input name="resource_type" placeholder="resource_type" value="{{ filters.resource_type or '' }}">
+  <input name="actor_id" placeholder="actor_id" value="{{ filters.actor_id or '' }}">
+  <button type="submit">Filter</button>
+</form>
+<table>
+  <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Resource</th><th>ID</th><th>Project</th><th>Request</th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>
+      <td>{{ row.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+      <td><code>{{ row.actor_id }}</code></td>
+      <td>{{ row.action }}</td>
+      <td>{{ row.resource_type }}</td>
+      <td><code>{{ row.resource_id }}</code></td>
+      <td><code>{{ row.project_id or "—" }}</code></td>
+      <td><code>{{ row.request_id or "" }}</code></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -265,6 +265,48 @@ def leaderboard(
     ]
 
 
+# ---------- Gating (Phase 3) ----------
+from typing import Any as _Any  # noqa: E402
+from fastapi import Body  # noqa: E402
+
+
+@router.post("/{run_id}/decide")
+async def decide_run(
+    project: str,
+    run_id: str,
+    principal: PrincipalDep,
+    db: Annotated[Session, Depends(get_db)],
+    policy: dict[str, _Any] = Body(...),
+) -> dict[str, _Any]:
+    """Evaluate ``policy`` against ``run_id`` and emit a gating decision.
+
+    Policy DSL: see ``melp/services/run/gating.py`` docstring. The response
+    includes a Markdown PR-comment payload ready for webhook posting.
+    """
+    await require_role(project, principal, "viewer")
+    from melp.services.run.gating import evaluate_policy, render_pr_comment
+
+    run = db.query(models.Run).filter_by(id=run_id, project_id=project).one_or_none()
+    if run is None:
+        raise NotFound("run not found")
+    decision = evaluate_policy(db, run, policy)
+    enqueue_event(
+        db,
+        project_id=project,
+        event="run.gate.passed" if decision.passed else "run.gate.failed",
+        payload={
+            "run_id": run_id,
+            "blocking_failures": decision.blocking_failures,
+            "warnings": decision.warnings,
+            "policy_hash": decision.policy_hash,
+        },
+    )
+    return {
+        **decision.to_dict(),
+        "pr_comment_markdown": render_pr_comment(decision),
+    }
+
+
 # ---------- Webhooks (Phase 2 — §8.5) ----------
 @router.post("/_webhooks", response_model=WebhookSubscriptionRead, status_code=201)
 async def create_webhook(

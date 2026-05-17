@@ -18,7 +18,8 @@ from melp.common.config import get_settings
 from melp.common.db import session_scope
 from melp.common.storage import get_bytes, put_bytes
 from melp.common.telemetry import get_logger
-from melp.metrics.base import MetricResult, load_metric
+from melp.metrics.base import MetricResult
+from melp.metrics.sandbox import run_metric_in_sandbox
 
 log = get_logger(__name__)
 
@@ -35,11 +36,16 @@ def _evaluate_one(
     references: list,
     judge_scores: list | None,
 ) -> MetricResult:
-    fn = load_metric(metric_version.package_uri)
     kwargs: dict[str, Any] = {}
     if judge_scores is not None:
         kwargs["judge_scores"] = judge_scores
-    return fn(predictions, references, **kwargs)
+    # ADR-011: invoke metric inside a subprocess sandbox with CPU/RAM/FD limits.
+    return run_metric_in_sandbox(
+        metric_version.package_uri,
+        predictions,
+        references,
+        kwargs=kwargs,
+    )
 
 
 def compute_metrics_for_run(run_id: str) -> int:

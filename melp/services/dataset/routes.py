@@ -24,7 +24,7 @@ from melp.common import models
 from melp.common.audit import write_audit
 from melp.common.auth import PrincipalDep, require_role
 from melp.common.db import get_db
-from melp.common.errors import Conflict, NotFound, ValidationFailed
+from melp.common.errors import Conflict, Forbidden, NotFound, ValidationFailed
 from melp.common.ids import new_id
 from melp.common.schemas import (
     DatasetCreate,
@@ -139,6 +139,36 @@ async def publish_version(
         raise NotFound("dataset version not found")
     if dv.status != "DRAFT":
         raise ValidationFailed(f"can only publish from DRAFT, current status: {dv.status}")
+
+    # ---- Phase 3: enforce classification policy at publish (§9.7) ----
+    # - Highly-classified datasets must have envelope-encrypted assets (asset
+    #   URI prefix ``s3://…/encrypted/`` is the convention; real systems would
+    #   re-encrypt server-side here).
+    # - Export-controlled datasets require an explicit approver role.
+    if dv.classification in ("secret", "export-controlled"):
+        if "/encrypted/" not in dv.asset_root_uri:
+            raise ValidationFailed(
+                f"classification={dv.classification!r} requires envelope-encrypted assets "
+                "(asset_root_uri must include '/encrypted/')"
+            )
+    if dv.classification == "export-controlled":
+        if "export-control-approver" not in (principal.groups or []):
+            raise Forbidden(
+                "publishing export-controlled datasets requires the "
+                "'export-control-approver' group"
+            )
+
+    # Storage quota gate at publish time.
+    proj = db.query(models.Project).filter_by(id=project).one()
+    from melp.common.quota import check_under_quota
+
+    ok, used = check_under_quota(project, proj.quota_storage_gb)
+    if not ok:
+        raise ValidationFailed(
+            f"project storage quota exceeded: {used / 1e9:.2f} GB used, "
+            f"quota {proj.quota_storage_gb} GB"
+        )
+
     dv.status = "PUBLISHED"
     dv.published_by = principal.user_id
     dv.published_at = datetime.now(UTC)

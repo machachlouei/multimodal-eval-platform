@@ -116,21 +116,14 @@ def run_inference_for_run(run_id: str) -> int:
         mv = db.query(models.ModelVersion).filter_by(id=r.model_version_id).one()
         dv = db.query(models.DatasetVersion).filter_by(id=r.dataset_version_id).one()
         enqueue_event(db, project_id=r.project_id, event="run.started", payload={"run_id": run_id})
-    # Streaming outside the DB session.
+    # Sharded inference (Ray when MELP_USE_RAY=1, else sequential).
     fn = _model_callable(mv)
-    out_lines: list[str] = []
-    done = 0
-    total = 0
-    for ex in iter_dataset(dv):
-        total += 1
-        pred = fn(ex.get("input"))
-        out_lines.append(json.dumps({"id": ex.get("id", str(total)), "prediction": pred, "reference": ex.get("reference"), **{k: v for k, v in ex.items() if k not in ("input", "reference")}}))
-        done += 1
-        if done % 100 == 0:
-            with session_scope() as db:
-                db.query(models.Run).filter_by(id=run_id).update(
-                    {"progress": {"examples_total": total, "examples_done": done}}
-                )
+    examples = list(iter_dataset(dv))
+    total = len(examples)
+    from melp.workers.ray_runner import shard_inference  # local import; ray optional
+
+    out_lines = shard_inference(examples, fn)
+    done = len(out_lines)
     blob = ("\n".join(out_lines) + "\n").encode()
     put_bytes(s.s3_bucket_artifacts, f"runs/{run_id}/predictions.jsonl", blob, "application/x-ndjson")
     with session_scope() as db:

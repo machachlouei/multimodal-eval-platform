@@ -1,0 +1,20 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: melp-object-store-zone-a-loss
+  namespace: melp-prod
+spec:
+  action: loss
+  mode: all
+  selector:
+    namespaces: [melp-prod]
+  direction: to
+  target:
+    selector:
+      namespaces: [object-store]
+      labelSelectors:
+        topology.kubernetes.io/zone: zone-a
+    mode: all
+  loss:
+    loss: '100'
+  duration: '15m'

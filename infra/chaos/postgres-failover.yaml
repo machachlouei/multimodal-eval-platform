@@ -1,0 +1,16 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: melp-postgres-primary-kill
+  namespace: melp-prod
+spec:
+  action: pod-kill
+  mode: one
+  selector:
+    namespaces: [melp-prod]
+    labelSelectors:
+      app: postgres
+      role: primary
+  duration: '60s'
+  scheduler:
+    cron: '@every 0s'

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Slices · MELP{% endblock %}
+{% block body %}
+<h1>Slice browser</h1>
+<p>Worst-5 results per slice across all runs in <code>{{ project_id }}</code>.</p>
+{% for sd, worst in rows %}
+  <h2>{{ sd.name }} <span class="muted">— {{ sd.description }}</span></h2>
+  <details><summary>predicate</summary><pre><code>{{ sd.predicate }}</code></pre></details>
+  <table>
+    <thead><tr><th>Run</th><th>Model</th><th>Point</th><th>n</th></tr></thead>
+    <tbody>
+    {% for r, rr in worst %}
+      <tr>
+        <td><a href="/r/{{ r.id }}">{{ r.id }}</a></td>
+        <td><code>{{ r.model_version_id }}</code></td>
+        <td>{{ "%.4f"|format(rr.point_estimate) }}</td>
+        <td>{{ rr.n_examples }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endfor %}
+<style>.muted { color: #888; font-weight: normal; }</style>
+{% endblock %}

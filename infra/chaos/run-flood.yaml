@@ -1,0 +1,12 @@
+# Not a Chaos-Mesh manifest — a k6 driver that floods one project at 10x its
+# normal submission rate. Run alongside the regular load test to verify that
+# per-project fair queueing keeps other projects healthy (§10.6).
+#
+# Usage: k6 run -e PROJECT=offender infra/chaos/run-flood.js
+
+apiVersion: kind/perf-driver
+description: |
+  Run via `k6 run infra/chaos/run-flood.js` — paired with infra/perf/load.js
+  in another terminal to exercise fair queueing under contention.
+  This file documents the intent; the actual driver lives at run-flood.js
+  next to it.

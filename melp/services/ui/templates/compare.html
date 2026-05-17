@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Compare runs · MELP{% endblock %}
+{% block body %}
+<h1>Compare runs</h1>
+<p>
+  <strong>A</strong>: <a href="/r/{{ a.id }}">{{ a.id }}</a>
+  <code>{{ a.model_version_id }}</code> · status {{ a.status }}
+  <br>
+  <strong>B</strong>: <a href="/r/{{ b.id }}">{{ b.id }}</a>
+  <code>{{ b.model_version_id }}</code> · status {{ b.status }}
+</p>
+<table>
+  <thead><tr><th>Metric</th><th>Slice</th><th>A</th><th>B</th><th>Δ (B − A)</th><th>p</th></tr></thead>
+  <tbody>
+  {% for key in keys %}
+    {% set ra = rrA.get(key) %}{% set rb = rrB.get(key) %}
+    <tr>
+      <td>{{ mv_map.get(key[0]).metric_id if mv_map.get(key[0]) else key[0] }}</td>
+      <td>{{ slice_map.get(key[1]).name if key[1] else "overall" }}</td>
+      <td>{% if ra %}{{ "%.4f"|format(ra.point_estimate) }}{% endif %}</td>
+      <td>{% if rb %}{{ "%.4f"|format(rb.point_estimate) }}{% endif %}</td>
+      <td>
+        {% if ra and rb %}
+          {% set d = rb.point_estimate - ra.point_estimate %}
+          <span class="{{ 'pos' if d > 0 else ('neg' if d < 0 else '') }}">{{ "%+.4f"|format(d) }}</span>
+        {% endif %}
+      </td>
+      <td>{% if rb and rb.p_value is not none %}{{ "%.4f"|format(rb.p_value) }}{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<style>
+  .pos { color: #007733; }
+  .neg { color: #aa0000; }
+</style>
+{% endblock %}

@@ -1,0 +1,18 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: melp-judge-gateway-blackhole
+  namespace: melp-prod
+spec:
+  action: partition
+  mode: all
+  selector:
+    namespaces: [melp-prod]
+    labelSelectors:
+      plane: judge
+  direction: to
+  target:
+    selector:
+      namespaces: [llm-gateway]
+    mode: all
+  duration: '10m'

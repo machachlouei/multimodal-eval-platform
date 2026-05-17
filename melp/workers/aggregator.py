@@ -183,12 +183,27 @@ def aggregate_run(run_id: str) -> None:
                         "n": len(vals),
                     }
                 )
-        # Persist a results blob (Iceberg target in prod, JSON stand-in here).
-        s = get_settings()
-        put_bytes(
-            s.s3_bucket_results,
-            f"runs/{run_id}/aggregate.json",
-            json.dumps(result_summary).encode(),
-            "application/json",
-        )
+        # Persist via PyIceberg if configured; fall back to JSON blob otherwise.
+        from melp.workers.iceberg_writer import write_run_results
+
+        iceberg_rows = [
+            {
+                "run_id": run_id,
+                "project_id": r.project_id,
+                "model_version_id": r.model_version_id,
+                "dataset_version_id": r.dataset_version_id,
+                "metric_version_id": item["metric_version_id"],
+                "slice_name": item["slice"],
+                "point_estimate": item["point"],
+                "ci_low": item["ci"][0] if item.get("ci") else None,
+                "ci_high": item["ci"][1] if item.get("ci") else None,
+                "ci_method": "percentile",
+                "n_examples": item["n"],
+                "p_value": None,
+                "effect_size": None,
+                "submitted_at_day": r.submitted_at.date().isoformat(),
+            }
+            for item in result_summary
+        ]
+        write_run_results(run_id, iceberg_rows)
         r.completed_at = datetime.now(UTC)
